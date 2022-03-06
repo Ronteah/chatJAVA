@@ -35,6 +35,7 @@ public class Sender extends Thread{
         msg = in.readLine();
         if(msg != null){
             out.write(msg);
+            out.flush();
         }
     }
 

@@ -8,13 +8,14 @@ public class Serveur {
                 
     }
     
-    public static void main(String[] args) {
+    public static void main(String[] args) throws UnknownHostException {
         final ServerSocket serverSocket;
         final Socket clientSocket;
         final BufferedReader in;
         final PrintWriter out;
         final Scanner sc = new Scanner(System.in);
-
+        
+        System.out.println("Starting server on port 5000 local address is " + InetAddress.getLocalHost().getHostAddress());
         try{
             serverSocket = new ServerSocket(5000);
             clientSocket = serverSocket.accept();
