@@ -23,6 +23,10 @@ public class ClientConnexion implements Runnable{
     JTextPane chat;
     StyledDocument doc;
 
+    ListeClients listeClients;
+
+    String[] reponseClients;
+
     private boolean estConnecte = true;
     
     public ClientConnexion(String host, int port, String name, JTextArea msg, JButton btn, JButton btnDeco, JTextPane chat){
@@ -55,11 +59,18 @@ public class ClientConnexion implements Runnable{
             public void actionPerformed(ActionEvent e){
                 
                 //Envoi
-                String msg = "> "+name+" : "+message.getText();
-                writer.write(msg);
-                writer.flush();  
+                if(!message.getText().equals("")){
+                    String msg = "> "+name+" : "+message.getText();
+                    writer.write(msg);
+                    writer.flush();  
 
-                System.out.println("Message : \"" + msg + "\" envoye par " + name);
+                    System.out.println("Message : \"" + msg + "\" envoye par " + name);
+                    message.setText("");
+
+                    writer.write(listeClients.toString());
+                    writer.flush(); 
+                    message.setText("");
+                }
 
             }
         });
@@ -72,6 +83,8 @@ public class ClientConnexion implements Runnable{
 
                     writer.write("%%CLOSE%%");
                     writer.flush();
+
+                    chat.setText(""); 
 
                     estConnecte = false;
                 }else{
@@ -90,12 +103,26 @@ public class ClientConnexion implements Runnable{
             }
             try {               
                 writer = new PrintWriter(connexion.getOutputStream(), true);
-                reader = new BufferedInputStream(connexion.getInputStream());              
+                reader = new BufferedInputStream(connexion.getInputStream());       
+                
                                 
                 //On attend la réponse
                 String reponse = read();
                 System.out.println("\t * " + name + " : Reponse recue " + reponse);
-                doc.insertString(doc.getLength(), reponse + "\n", null);
+
+                if(reponse.startsWith("%%CLIENTS%%")){
+                    reponseClients = reponse.split(",");
+                    listeClients.clearClient();
+
+                    for(int i=0; i<reponseClients.length; i++){
+                        listeClients.addClient(reponseClients[i]);
+                    }
+
+                    System.out.println("Post reponseClients : "+listeClients.toString());
+                }else{
+                    doc.insertString(doc.getLength(), reponse + "\n", null); 
+                }
+
                 reponse = "";
                 
             } catch (IOException e1) {
@@ -123,4 +150,8 @@ public class ClientConnexion implements Runnable{
         response = new String(b, 0, stream);      
         return response;
     }   
+    
+    public ListeClients getListeClients(){
+        return listeClients;
+    }
 }

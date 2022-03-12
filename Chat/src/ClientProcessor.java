@@ -9,9 +9,11 @@ public class ClientProcessor implements Runnable{
     private Socket sock;
     private PrintWriter writer = null;
     private BufferedInputStream reader = null;
-    
-    public ClientProcessor(Socket pSock){
+    private ListeClients listeClients;
+        
+    public ClientProcessor(Socket pSock, ListeClients listeClients){
         sock = pSock;
+        this.listeClients = listeClients;
     }
     
     //Le traitement lancé dans un thread séparé
@@ -23,6 +25,10 @@ public class ClientProcessor implements Runnable{
             try {
                 writer = new PrintWriter(sock.getOutputStream());
                 reader = new BufferedInputStream(sock.getInputStream());
+
+                //Envoie de la liste des clients connectés
+                writer.write(listeClients.toString());
+                writer.flush();
                 
                 //On attend la demande du client            
                 String reponse = read();              
@@ -31,6 +37,7 @@ public class ClientProcessor implements Runnable{
                     sock.close();
                 }else{
                     System.out.println("Message recu : "+reponse);
+                    System.out.println();
                 }       
                 
                 String toSend = reponse;

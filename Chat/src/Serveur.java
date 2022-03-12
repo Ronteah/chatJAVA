@@ -11,6 +11,7 @@ public class Serveur {
     private String host = "127.0.0.1";
     private ServerSocket serveur = null;
     private boolean isRunning = true;
+    private ListeClients listeClients;
 
     public static void main(String[] args) {
         port = Integer.parseInt(args[0]);
@@ -56,7 +57,7 @@ public class Serveur {
                         
                         //Une fois reçue, on la traite dans un thread séparé
                         System.out.println("Un client a rejoint.");                  
-                        Thread t = new Thread(new ClientProcessor(client));
+                        Thread t = new Thread(new ClientProcessor(client, listeClients));
                         t.start();
                         
                     } catch (IOException e) {

@@ -1,12 +1,10 @@
 import java.awt.*;
 import java.awt.event.*;
-import java.util.ArrayList;
-import java.util.List;
 
 import javax.swing.*;
 import javax.swing.event.*;
 
-public class Frame extends JPanel{
+public class Frame{
     private JLabel nomLabel;
     private JLabel ipLabel;
     private JLabel portLabel;
@@ -15,7 +13,7 @@ public class Frame extends JPanel{
     private JLabel connectesLabel;
     private JLabel discussionLabel;
     private JLabel messageLabel;
-    private JList<String> listeConnectes;
+    private ListeClients listeConnectes;
     private JTextPane chatBox;
     private JTextArea messageBox;
     private JButton envoyerBtn;
@@ -26,6 +24,15 @@ public class Frame extends JPanel{
     private boolean estConnecte = false;
 
     public Frame() {
+
+        JFrame frame = new JFrame("Frame");
+        frame.setDefaultCloseOperation (JFrame.EXIT_ON_CLOSE);
+        frame.setVisible (true);
+        frame.setResizable(false);
+
+        //Ajuste la taille de la fenêtre
+        frame.setSize(new Dimension (470, 520));
+        frame.setLayout(null);
 
         //Creation composants
         nomLabel = new JLabel ("Nom");
@@ -66,41 +73,24 @@ public class Frame extends JPanel{
         discussionLabel = new JLabel ("Discussion");
         discussionLabel.setVisible(false);
 
-        messageLabel = new JLabel ("Message");
+        messageLabel = new JLabel ("Message");      
         messageLabel.setVisible(false);
 
-        listeConnectes = new JList<String>();
-        listeConnectes.setModel(new AbstractListModel<String>() {
-            List<String> connectes = new ArrayList<String>();
-            
-            public void addElement(String e){
-                connectes.add(e);
-            }
 
-            public void removeElement(String e){
-                connectes.remove(e);
-            }
 
-            @Override
-            public String getElementAt(int index) {
-                return null;
-            }
 
-            @Override
-            public int getSize() {
-                return 0;
-            }
-        });
+        listeConnectes = getListeClients();
         listeConnectes.setVisible(false);
+
+
+
         
         chatBox = new JTextPane();
-        chatBox.setMaximumSize(new Dimension(255,50));
         chatBox.setEditable(false);
         chatBox.setVisible(false);
 
         scrollBarChat = new JScrollPane(chatBox);
-        scrollBarChat.setViewportView(chatBox);
-        scrollBarChat.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
+        scrollBarChat.setPreferredSize(new Dimension(250,80));
 
         messageBox = new JTextArea (5, 5);
         messageBox.setVisible(false);
@@ -118,27 +108,23 @@ public class Frame extends JPanel{
         ipBox = new JTextField (5);
         ipBox.setText("127.0.0.1");
 
-        //Ajuste la taille de la fenêtre
-        setPreferredSize (new Dimension (454, 475));
-        setLayout (null);
-
         //Ajout des composants
-        add(nomLabel);
-        add(ipLabel);
-        add(portLabel);
-        add(ipBox);
-        add(connexionBtn);
-        add(connectesLabel);
-        add(discussionLabel);
-        add(messageLabel);
-        add(listeConnectes);
-        add(chatBox);
-        add(messageBox);
-        add(envoyerBtn);
-        add(nom);
-        add(port);
-        add(scrollBarChat);
-        add(scrollBarMsg);
+        frame.add(nomLabel);
+        frame.add(ipLabel);
+        frame.add(portLabel);
+        frame.add(ipBox);
+        frame.add(connexionBtn);
+        frame.add(connectesLabel);
+        frame.add(discussionLabel);
+        frame.add(messageLabel);
+        frame.add(listeConnectes);
+        frame.add(chatBox);
+        frame.add(messageBox);
+        frame.add(envoyerBtn);
+        frame.add(nom);
+        frame.add(port);
+        frame.add(scrollBarChat);
+        frame.add(scrollBarMsg);
 
         //Position et taille des composants
         nomLabel.setBounds (25, 30, 100, 25);
@@ -146,10 +132,10 @@ public class Frame extends JPanel{
         portLabel.setBounds (250, 80, 100, 25);
         ipBox.setBounds (70, 80, 130, 25);
         connexionBtn.setBounds (280, 30, 150, 25);
-        connectesLabel.setBounds (25, 130, 100, 25);
+        connectesLabel.setBounds (45, 130, 100, 25);
         discussionLabel.setBounds (125, 130, 100, 25);
         messageLabel.setBounds (125, 330, 100, 25);
-        listeConnectes.setBounds (25, 155, 80, 301);
+        listeConnectes.setBounds (15, 150, 100, 301);
         chatBox.setBounds (125, 155, 305, 170);
         messageBox.setBounds (125, 355, 305, 60);
         envoyerBtn.setBounds (125, 430, 305, 25);
@@ -234,6 +220,7 @@ public class Frame extends JPanel{
         messageBox.setVisible(false);
 
         envoyerBtn.setVisible(false);
+        listeConnectes.removeClient(nom.getText());
     }
 
     public void fonctionDeconnexion(){
@@ -258,6 +245,10 @@ public class Frame extends JPanel{
         envoyerBtn.setVisible(true);
 
         connectClient();
+
+
+
+        listeConnectes.addClient(nom.getText());
     }
 
     private void connectClient() {
@@ -278,11 +269,6 @@ public class Frame extends JPanel{
     }
 
     public static void main (String[] args) {
-        JFrame frame = new JFrame ("Frame");
-        frame.setDefaultCloseOperation (JFrame.EXIT_ON_CLOSE);
-        frame.getContentPane().add (new Frame());
-        frame.pack();
-        frame.setVisible (true);
-        frame.setResizable(false);
+        new Frame();
     }
 }
