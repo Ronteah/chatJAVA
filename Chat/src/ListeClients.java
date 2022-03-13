@@ -1,35 +1,67 @@
+import java.util.List;
+import java.util.ArrayList;
 
-import java.awt.Dimension;
-import javax.swing.*;
+public class ListeClients{
+    private List<Client> listeClients;
 
-public class ListeClients extends JPanel{
-    private JList<String> liste;
-    DefaultListModel<String> clients;
-
+    /**
+     * 
+     * Constructeur
+     */
     public ListeClients(){
-        clients = new DefaultListModel<String>();
-        liste = new JList<String>(clients);
-        this.setSize(new Dimension(120,301));
-        this.setVisible(true);
-        this.add(liste);
+        listeClients = new ArrayList<Client>();
     }
 
-    public void addClient(String nom){
-        clients.addElement(nom);
+
+
+    /**
+     * 
+     * Méthodes de classe
+     */
+
+    /**
+     * Ajoute un client à la liste des clients connectés
+     * @param c
+     */
+    public void addClient(Client c){
+        listeClients.add(c);
     }
 
-    public void removeClient(String nom){
-        clients.removeElement(nom);
+    /**
+     * Enlève un client à la liste des clients connectés
+     * @param c
+     */
+    public void removeClient(Client c){
+        listeClients.remove(c);
     }
 
-    public void clearClient(){
-        clients.clear();
+    /**
+     * 
+     * Réinitialise la liste des clients connectés
+     */
+    public void clearClients(){
+        listeClients.clear();
     }
 
+    /**
+     * 
+     * Retourne la liste des clients connectés
+     * @return List<Client>
+     */
+    public List<Client> getListe(){
+        return listeClients;
+    }
+
+
+    /**
+     * 
+     * Renvoie la liste des clients connectés sous forme de texte
+     * @return String
+     */
     public String toString(){
         String res = "%%CLIENTS%%,";
-        for(int i = 0; i < clients.size(); i++) {
-            res+=clients.get(i)+",";
+        for(int i = 0; i < listeClients.size(); i++) {
+            res+=listeClients.get(i).getName()+",";
         }
         return res;
     }

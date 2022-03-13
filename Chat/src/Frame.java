@@ -1,5 +1,6 @@
 import java.awt.*;
 import java.awt.event.*;
+import java.net.ConnectException;
 
 import javax.swing.*;
 import javax.swing.event.*;
@@ -13,15 +14,24 @@ public class Frame{
     private JLabel connectesLabel;
     private JLabel discussionLabel;
     private JLabel messageLabel;
-    private ListeClients listeConnectes;
+    private JList<String> listeConnectes;
+    private DefaultListModel<String> listeDesClients;
+    private ListeClients listeClients;
     private JTextPane chatBox;
     private JTextArea messageBox;
     private JButton envoyerBtn;
     private JTextField nom;
     private JTextField ipBox;
-    private JScrollPane scrollBarChat;
-    private JScrollPane scrollBarMsg;
     private boolean estConnecte = false;
+
+    private JScrollPane scroll;
+    private JScrollPane scrollMsg;
+    
+
+    /**
+     * 
+     * Constructeur
+     */
 
     public Frame() {
 
@@ -39,7 +49,6 @@ public class Frame{
         ipLabel = new JLabel ("IP");
         portLabel = new JLabel ("Port");
         port = new JTextField (5);
-        port.setText("5000");
 
         connexionBtn = new JButton ("Connexion");
         connexionBtn.setEnabled(false);
@@ -50,7 +59,11 @@ public class Frame{
                         if(estConnecte){
                             fonctionConnexion();
                         }else{
-                            fonctionDeconnexion();
+                            try {
+                                fonctionDeconnexion();
+                            } catch (ConnectException e1) {
+                                System.out.println("Impossible de se connecter au serveur !");
+                            }
                         }
                     }else{
                         JOptionPane.showMessageDialog(null, 
@@ -78,35 +91,41 @@ public class Frame{
 
 
 
+        listeClients = new ListeClients();
 
-        listeConnectes = getListeClients();
+        listeDesClients = new DefaultListModel<String>();
+
+        listeConnectes = new JList<String>(listeDesClients);
         listeConnectes.setVisible(false);
 
 
 
+
+
+        scroll = new JScrollPane();
+        scroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
         
         chatBox = new JTextPane();
         chatBox.setEditable(false);
         chatBox.setVisible(false);
 
-        scrollBarChat = new JScrollPane(chatBox);
-        scrollBarChat.setPreferredSize(new Dimension(250,80));
+
+        
+
+        scrollMsg = new JScrollPane();
+        scrollMsg.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
 
         messageBox = new JTextArea (5, 5);
         messageBox.setVisible(false);
         messageBox.setMaximumSize(new Dimension(255,60));
 
-        scrollBarMsg = new JScrollPane(messageBox);
-        scrollBarMsg.setViewportView(messageBox);
-        scrollBarMsg.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
+
 
         envoyerBtn = new JButton ("Envoyer");
         envoyerBtn.setVisible(false);
         
         nom = new JTextField (5);
-        nom.setText("Louis");
         ipBox = new JTextField (5);
-        ipBox.setText("127.0.0.1");
 
         //Ajout des composants
         frame.add(nomLabel);
@@ -123,8 +142,6 @@ public class Frame{
         frame.add(envoyerBtn);
         frame.add(nom);
         frame.add(port);
-        frame.add(scrollBarChat);
-        frame.add(scrollBarMsg);
 
         //Position et taille des composants
         nomLabel.setBounds (25, 30, 100, 25);
@@ -135,13 +152,23 @@ public class Frame{
         connectesLabel.setBounds (45, 130, 100, 25);
         discussionLabel.setBounds (125, 130, 100, 25);
         messageLabel.setBounds (125, 330, 100, 25);
-        listeConnectes.setBounds (15, 150, 100, 301);
+        listeConnectes.setBounds (15, 155, 100, 301);
         chatBox.setBounds (125, 155, 305, 170);
         messageBox.setBounds (125, 355, 305, 60);
         envoyerBtn.setBounds (125, 430, 305, 25);
         nom.setBounds (70, 30, 130, 25);
         port.setBounds (300, 80, 130, 25);
 
+        
+        scroll.setBounds(125, 155, 305, 170);
+        scroll.getViewport().add(chatBox);
+        scroll.setVisible(false);
+        frame.add(scroll);
+
+        scrollMsg.setBounds(125, 355, 305, 60);
+        scrollMsg.getViewport().add(messageBox);
+        scrollMsg.setVisible(false);
+        frame.add(scrollMsg);
 
         nom.getDocument().addDocumentListener(new DocumentListener(){
             @Override
@@ -195,11 +222,27 @@ public class Frame{
         });
     }
 
+
+
+    /**
+     * 
+     * Méthodes de classe
+     */
+
+
+    /**
+     * 
+     * Permet de déverrouiller le bouton de connexion lorsque tous les champs sont valides
+     */
     public void testActiveButton(){
         boolean res = !nom.getText().trim().isEmpty() && !ipBox.getText().trim().isEmpty() && !port.getText().trim().isEmpty();
         connexionBtn.setEnabled(res);
     }
 
+    /**
+     * 
+     * Met à jour l'interface de l'application lorsque le client n'est pas connecté
+     */
     public void fonctionConnexion(){
         estConnecte = false;
         connexionBtn.setText("Connexion");
@@ -220,10 +263,20 @@ public class Frame{
         messageBox.setVisible(false);
 
         envoyerBtn.setVisible(false);
-        listeConnectes.removeClient(nom.getText());
+
+        scroll.setVisible(false);
+        scrollMsg.setVisible(false);
+        
+        listeClients.clearClients();
+        listeDesClients.clear();
     }
 
-    public void fonctionDeconnexion(){
+    /**
+     * 
+     * Met à jour l'interface de l'application lorsque le client est connecté à un serveur
+     * @throws ConnectException
+     */
+    public void fonctionDeconnexion() throws ConnectException{
         estConnecte = true;
         connexionBtn.setText("Deconnexion");
         nom.setEnabled(false);
@@ -244,30 +297,48 @@ public class Frame{
 
         envoyerBtn.setVisible(true);
 
+        scroll.setVisible(true);
+        scrollMsg.setVisible(true);
+
         connectClient();
-
-
-
-        listeConnectes.addClient(nom.getText());
     }
 
-    private void connectClient() {
-        Thread t = new Thread(new ClientConnexion(ipBox.getText(), Integer.parseInt(port.getText()), nom.getText(), messageBox, envoyerBtn, connexionBtn, chatBox));
+    /**
+     * 
+     * Connecte le client au serveur et transmet tous les objets utiles afin de pouvoir mettre à jour l'interface
+     * @throws ConnectException
+     */
+    private void connectClient() throws ConnectException {
+        
+        //Lance un nouveau thread
+        Thread t = new Thread(new ClientConnexion(ipBox.getText(), Integer.parseInt(port.getText()), nom.getText(), messageBox, envoyerBtn, connexionBtn, chatBox, listeClients, listeDesClients));
         t.start();
     }
 
+    /**
+     * 
+     * Teste si le port entré par le client est valide ou non
+     * @return boolean
+     */
     public boolean testPort(){
         return port.getText().matches("^([1-9][0-9]{0,3}|[1-5][0-9]{4}|6[0-4][0-9]{3}|65[0-4][0-9]{2}|655[0-2][0-9]|6553[0-5])$");
     }
 
+
+    /**
+     * 
+     * Teste si l'IP entrée par le client est valide ou non
+     * @return boolean
+     */
     public boolean testIP(){
         return ipBox.getText().matches("^(?:[0-9]{1,3}\\.){3}[0-9]{1,3}$");
     }   
 
-    public String getMessage(){
-        return messageBox.getText();
-    }
-
+    /**
+     * 
+     * Main lançant ainsi la nouvelle fenêtre
+     * @param args
+     */
     public static void main (String[] args) {
         new Frame();
     }
